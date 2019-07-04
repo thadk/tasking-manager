@@ -146,6 +146,30 @@ class HomePageStatsAPI(Resource):
             return {"error": error_msg}, 500
 
 
+class PopularProjectsStatsAPI(Resource):
+    def get(self):
+        """
+        Get Popular project Stats
+        ---
+        tags:
+          - stats
+        produces:
+          - application/json
+        responses:
+            200:
+                description: Popular Projects stats
+            500:
+                description: Internal Server Error
+        """
+        try:
+            stats = StatsService.get_popular_projects()
+            return stats.to_primitive(), 200
+        except Exception as e:
+            error_msg = f'Unhandled error: {str(e)}'
+            current_app.logger.critical(error_msg)
+            return {"error": error_msg}, 500
+
+
 class StatsUserAPI(Resource):
 
     def get(self, username):

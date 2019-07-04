@@ -107,7 +107,8 @@ def init_flask_restful_routes(app):
     from server.api.project_apis import ProjectAPI, ProjectAOIAPI, ProjectSearchAPI, HasUserTaskOnProject,\
         HasUserTaskOnProjectDetails, ProjectSearchBBoxAPI, ProjectSummaryAPI, TaskAnnotationsAPI
     from server.api.swagger_docs_api import SwaggerDocsAPI
-    from server.api.stats_api import StatsContributionsAPI, StatsActivityAPI, StatsProjectAPI, HomePageStatsAPI, StatsUserAPI, StatsProjectUserAPI
+    from server.api.stats_api import StatsContributionsAPI, StatsActivityAPI, StatsProjectAPI, HomePageStatsAPI, StatsUserAPI,\
+        StatsProjectUserAPI, PopularProjectsStatsAPI
     from server.api.tags_apis import CampaignsTagsAPI, OrganisationTagsAPI
     from server.api.mapping_issues_apis import MappingIssueCategoryAPI, MappingIssueCategoriesAPI
     from server.api.users.user_apis import UserAPI, UserIdAPI, UserOSMAPI, UserMappedProjects, UserSetRole, UserSetLevel,\
@@ -172,6 +173,7 @@ def init_flask_restful_routes(app):
     api.add_resource(StatsProjectAPI,               '/api/v1/stats/project/<int:project_id>')
     api.add_resource(StatsProjectUserAPI,           '/api/v1/stats/project/<int:project_id>/user/<string:username>')
     api.add_resource(StatsUserAPI,                  '/api/v1/stats/user/<string:username>')
+    api.add_resource(PopularProjectsStatsAPI,       '/api/v1/stats/popular/projects')
     api.add_resource(HomePageStatsAPI,              '/api/v1/stats/summary')
     api.add_resource(CampaignsTagsAPI,              '/api/v1/tags/campaigns')
     api.add_resource(OrganisationTagsAPI,           '/api/v1/tags/organisations')

@@ -4,6 +4,21 @@ from schematics.types.compound import ListType, ModelType
 from server.models.dtos.mapping_dto import TaskHistoryDTO
 
 
+class PopularProjectDTO(Model):
+    id = IntType()
+    name = StringType()
+    count = IntType()
+
+
+class PopularProjectsDTO(Model):
+    """ DTO for all user contributons on a project """
+    def __init__(self):
+        super().__init__()
+        self.popular_projects = []
+
+    popular_projects = ListType(ModelType(PopularProjectDTO), serialized_name='popularProjects')
+
+
 class UserContribution(Model):
     """ User contribution for a project """
     username = StringType()
