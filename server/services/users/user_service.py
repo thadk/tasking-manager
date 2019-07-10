@@ -4,14 +4,15 @@ from functools import reduce
 import dateutil.parser
 import datetime
 
-from sqlalchemy import text
+from sqlalchemy import text, func, cast
+from sqlalchemy.types import Interval
 
 from server import db
 from server.models.dtos.user_dto import UserDTO, UserOSMDTO, UserFilterDTO, UserSearchQuery, UserSearchDTO, \
-    UserStatsDTO
+    UserStatsDTO, UserContributionDTO, UserContributionsDTO
 from server.models.dtos.message_dto import MessageDTO
 from server.models.postgis.message import Message
-from server.models.postgis.task import TaskHistory
+from server.models.postgis.task import TaskHistory, TaskAction
 from server.models.postgis.user import User, UserRole, MappingLevel
 from server.models.postgis.utils import NotFound
 from server.services.users.osm_service import OSMService, OSMServiceError
@@ -48,6 +49,39 @@ class UserService:
             raise NotFound()
 
         return user
+
+    @staticmethod
+    def get_contributions_by_day(user_id: int) -> UserContributionsDTO:
+        # Validate that user exists.
+        user = UserService.get_user_by_id(user_id)
+
+        series = db.session.query(func.generate_series(
+                datetime.date.today() - datetime.timedelta(days=365),
+                datetime.date.today(),
+                cast('1 day', Interval()))\
+            .label('day'))\
+            .subquery()
+
+        # Filter tasks by user_id only.
+        tasks = TaskHistory.query.with_entities(
+                func.DATE(TaskHistory.action_date).label('day')
+            )\
+            .filter(TaskHistory.user_id==user_id)\
+            .filter(TaskHistory.action==TaskAction.STATE_CHANGE.name)\
+            .subquery()
+
+        stats = db.session.query(
+                func.date(series.c.day),
+                func.count(tasks.c.day).label('cnt'))\
+            .outerjoin(tasks, tasks.c.day==series.c.day)\
+            .group_by(series.c.day)
+
+        contributions = [UserContributionDTO(dict(date=str(s[0]), count=s[1]))
+            for s in stats]
+        dto = UserContributionsDTO()
+        dto.contributions = contributions
+
+        return dto
 
     @staticmethod
     def update_username(user_id: int, osm_username: str) -> User:
