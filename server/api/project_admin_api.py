@@ -225,6 +225,11 @@ class ProjectAdminAPI(Resource):
                       organisationTag:
                           type: string
                           default: red cross
+                      countryTag:
+                          type: array
+                          items:
+                              type: string
+                          default: []
                       licenseId:
                           type: integer
                           default: 1
@@ -672,4 +677,3 @@ class ProjectTransfer(Resource):
             error_msg = f'Project GET - unhandled error: {str(e)}'
             current_app.logger.critical(error_msg)
             return {"error": error_msg}, 500
-

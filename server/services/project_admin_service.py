@@ -222,7 +222,7 @@ class ProjectAdminService:
     def get_projects_for_admin(admin_id: int, preferred_locale: str):
         """ Get all projects for provided admin """
         return Project.get_projects_for_admin(admin_id, preferred_locale)
-        
+
     @staticmethod
     def transfer_project_to(project_id: int, transfering_user_id: int, username: str):
         """ Transfers project from old owner (transfering_user_id) to new owner (username) """
@@ -246,4 +246,3 @@ class ProjectAdminService:
             project.save()
         else:
             raise Exception("Normal users cannot transfer projects")
-        

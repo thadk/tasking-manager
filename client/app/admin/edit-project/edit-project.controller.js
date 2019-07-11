@@ -62,7 +62,7 @@
         vm.countryTags = [];
         vm.projectOrganisationTag = [];
         vm.projectCampaignTag = [];
-        vm.projectCountryTag;
+        vm.projectCountryTag = [];
 
         vm.project = {};
         vm.project.defaultLocale = 'en';
@@ -181,7 +181,7 @@
             // Only one tag is allowed at the moment so get the first item
             vm.project.organisationTag = null;
             vm.project.campaignTag = null;
-            vm.project.country = null;
+            vm.project.countryTag = [];
             if (vm.projectOrganisationTag[0]) {
                 vm.project.organisationTag = vm.projectOrganisationTag[0].text;
             }
@@ -189,7 +189,9 @@
                 vm.project.campaignTag = vm.projectCampaignTag[0].text;
             }
             if (vm.projectCountryTag) {
-                vm.project.countryTag = vm.projectCountryTag;
+                angular.forEach(vm.projectCountryTag, function(value, index){
+                  vm.project.countryTag.push(value.text)
+                })
             }
             if (vm.projectLicense){
                 vm.project.licenseId = vm.projectLicense.licenseId;
@@ -747,7 +749,7 @@
                 }
             }
             vm.mappingTypeMissing = getMappingTypesArray().length === 0;
-            var somethingMissing = vm.name || vm.descriptionMissing || vm.shortDescriptionMissing || vm.instructionsMissing || vm.organisationTagMissing || vm.mappingTypeMissing;
+            var somethingMissing = vm.name || vm.descriptionMissing || vm.shortDescriptionMissing || vm.instructionsMissing || vm.organisationTagMissing || vm.mappingTypeMissing || vm.countryTagMissing;
             return somethingMissing;
         }
 

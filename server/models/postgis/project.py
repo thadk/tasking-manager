@@ -282,6 +282,8 @@ class Project(db.Model):
             validation_editors_array.append(Editors[validation_editor].value)
         self.validation_editors = validation_editors_array
 
+        self.country = project_dto.country_tag
+
         # Add list of allowed users, meaning the project can only be mapped by users in this list
         if hasattr(project_dto, 'allowed_users'):
             self.allowed_users = []  # Clear existing relationships then re-insert
@@ -631,10 +633,10 @@ class Project(db.Model):
 
     @staticmethod
     def get_all_countries():
-        query = db.session.query(Project.country).filter(Project.country.isnot(None))
-        query = query.distinct(Project.country)
+        query = """select distinct(unnest(projects.country)) as country from projects group by country;"""
+        results = db.session.execute(query)
         tags_dto = TagsDTO()
-        tags_dto.tags = [''.join(r[0]) for r in query]
+        tags_dto.tags = [r[0] for r in results]
         return tags_dto
 
     @staticmethod

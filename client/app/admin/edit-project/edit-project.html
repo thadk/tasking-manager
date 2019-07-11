@@ -335,14 +335,14 @@
                                     </label>
                                 </div>
                                 <div class="form__group form__group--section">
-                                    <label class="form__label">{{ 'Countries' | translate }} *</label>
-                                    <p>{{ 'Tag related Countries.' | translate }}</p>
-                                    <tags-input ng-model="editProjectCtrl.projectCountryTag"
-                                        name="country" placeholder="{{ 'choose from existing countries' | translate }}"
-                                        replace-spaces-with-dashes="false">
-                                        <auto-complete source="editProjectCtrl.getCountryTags($query)"></auto-complete>
-                                    </tags-input>
-                                </div>
+                                   <label class="form__label">{{ 'Countries' | translate }} *</label>
+                                   <p>{{ 'Tag related Countries.' | translate }}</p>
+                                   <tags-input ng-model="editProjectCtrl.projectCountryTag"
+                                       name="country" placeholder="{{ 'choose from existing countries' | translate }}"
+                                       replace-spaces-with-dashes="false">
+                                       <auto-complete source="editProjectCtrl.getCountryTags($query)"></auto-complete>
+                                   </tags-input>
+                               </div>
                                 <div class="form__group form__group--section">
                                     <label class="form__label">{{ 'Organisation Tag' | translate }} *</label>
                                     <p>{{ 'Only one organisation tag is allowed.' | translate }}</p>
