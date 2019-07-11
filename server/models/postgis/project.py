@@ -558,6 +558,7 @@ class Project(db.Model):
         base_dto.allow_non_beginners = self.allow_non_beginners
         base_dto.private = self.private
         base_dto.mapper_level = MappingLevel(self.mapper_level).name
+        base_dto.country_tag = self.country
         base_dto.entities_to_map = self.entities_to_map
         base_dto.changeset_comment = self.changeset_comment
         base_dto.osmcha_filter_id = self.osmcha_filter_id
@@ -627,6 +628,14 @@ class Project(db.Model):
         project_tasks = Task.get_tasks_as_geojson_feature_collection(self.id)
 
         return project_tasks
+
+    @staticmethod
+    def get_all_countries():
+        query = db.session.query(Project.country).filter(Project.country.isnot(None))
+        query = query.distinct(Project.country)
+        tags_dto = TagsDTO()
+        tags_dto.tags = [''.join(r[0]) for r in query]
+        return tags_dto
 
     @staticmethod
     def get_all_organisations_tag(preferred_locale='en'):
