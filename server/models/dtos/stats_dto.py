@@ -7,7 +7,7 @@ from server.models.dtos.mapping_dto import TaskHistoryDTO
 class PopularProjectDTO(Model):
     id = IntType()
     name = StringType()
-    count = IntType()
+    rate = FloatType()
 
 
 class PopularProjectsDTO(Model):

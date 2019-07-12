@@ -2,7 +2,8 @@ from cachetools import TTLCache, cached
 
 from datetime import date, timedelta
 
-from sqlalchemy import func, text, desc
+from sqlalchemy import func, text, desc, cast, extract, or_
+from sqlalchemy.types import Time
 from server import db
 from server.models.dtos.stats_dto import (
     ProjectContributionsDTO, UserContribution, Pagination, TaskHistoryDTO,
@@ -12,7 +13,7 @@ from server.models.dtos.stats_dto import (
 from server.models.postgis.project import Project
 from server.models.postgis.project_info import ProjectInfo
 from server.models.postgis.statuses import TaskStatus
-from server.models.postgis.task import TaskHistory, User, Task
+from server.models.postgis.task import TaskHistory, User, Task, TaskAction
 from server.models.postgis.utils import timestamp, NotFound
 from server.services.project_service import ProjectService
 from server.services.users.user_service import UserService
@@ -114,15 +115,24 @@ class StatsService:
     @staticmethod
     def get_popular_projects() -> PopularProjectsDTO:
         """ Get all projects ordered by task_history """
-        results = db.session.query(ProjectInfo.project_id, ProjectInfo.name, func.count(TaskHistory.project_id)\
-            .label('total')).filter(TaskHistory.action_date >= date.today() - timedelta(days=30))\
+        results = TaskHistory.query.with_entities(ProjectInfo.project_id,
+            ProjectInfo.name,
+            (extract('epoch',
+                func.sum(cast(TaskHistory.action_text, Time))) / func.count(TaskHistory.user_id))\
+            .label('rate'))\
+            .filter(TaskHistory.action_date >= date.today() - timedelta(days=90))\
+            .filter(or_(TaskHistory.action==TaskAction.LOCKED_FOR_MAPPING.name,
+                TaskHistory.action==TaskAction.LOCKED_FOR_VALIDATION.name))\
+            .filter(TaskHistory.action_text!=None)\
+            .filter(TaskHistory.action_text!='')\
             .join(ProjectInfo, ProjectInfo.project_id==TaskHistory.project_id)\
-            .group_by(ProjectInfo.project_id, ProjectInfo.name, TaskHistory.project_id).order_by(desc('total'))\
-            .limit(30)\
+            .group_by(ProjectInfo.project_id, ProjectInfo.name)\
+            .order_by(desc('rate'))\
+            .limit(20)\
             .all()
 
         popular_dto = PopularProjectsDTO()
-        popular_dto.popular_projects = [PopularProjectDTO({'id': r[0], 'name': r[1], 'count': r[2]})
+        popular_dto.popular_projects = [PopularProjectDTO({'id': r[0], 'name': r[1], 'rate': r[2]})
             for r in results]
 
         return popular_dto
