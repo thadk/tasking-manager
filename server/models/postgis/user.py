@@ -1,6 +1,8 @@
 import geojson
+import requests
 import datetime
 import dateutil.parser
+from xml.etree import ElementTree
 from server import db
 from sqlalchemy import desc, text
 from server.models.dtos.user_dto import UserDTO, UserMappedProjectsDTO, MappedProject, UserFilterDTO, Pagination, \
@@ -30,12 +32,34 @@ class User(db.Model):
     twitter_id = db.Column(db.String)
     facebook_id = db.Column(db.String)
     linkedin_id = db.Column(db.String)
+    slack_id = db.Column(db.String)
+    skype_id = db.Column(db.String)
+    irc_id = db.Column(db.String)
+    location = db.Column(db.String)
     date_registered = db.Column(db.DateTime, default=timestamp)
     # Represents the date the user last had one of their tasks validated
     last_validation_date = db.Column(db.DateTime, default=timestamp)
 
     # Relationships
     accepted_licenses = db.relationship("License", secondary=users_licenses_table)
+
+    @property
+    def missing_maps_profile_url(self):
+        return f'http://www.missingmaps.org/users/#/{self.username}'
+
+    @property
+    def osm_profile_url(self):
+        return f'https://www.openstreetmap.org/user/{self.username}'
+
+    def get_profile_picture(self):
+        '''uses the OSM api to fetch the user's picture url'''
+        url = f'https://api.openstreetmap.org/api/0.6/user/{self.id}'
+        try:
+            response = requests.get(url)
+            tree = ElementTree.fromstring(response.content)
+            return tree.find('user').find('img').attrib['href']
+        except:
+            return ''
 
     def create(self):
         """ Creates and saves the current model to the DB """
@@ -64,6 +88,10 @@ class User(db.Model):
         self.twitter_id = user_dto.twitter_id.lower() if user_dto.twitter_id else None
         self.facebook_id = user_dto.facebook_id.lower() if user_dto.facebook_id else None
         self.linkedin_id = user_dto.linkedin_id.lower() if user_dto.linkedin_id else None
+        self.irc_id = user_dto.irc_id.lower() if user_dto.irc_id else None
+        self.skype_id = user_dto.skype_id.lower() if user_dto.skype_id else None
+        self.slack_id = user_dto.slack_id.lower() if user_dto.slack_id else None
+        self.location = user_dto.location 
         self.validation_message = user_dto.validation_message
         db.session.commit()
 
@@ -246,7 +274,7 @@ class User(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def as_dto(self, logged_in_username: str) -> UserDTO:
+    def as_dto(self, logged_in_username: str, fetch_picture: bool = False) -> UserDTO:
         """ Create DTO object from user in scope """
         user_dto = UserDTO()
         user_dto.id = self.id
@@ -266,10 +294,21 @@ class User(db.Model):
         user_dto.twitter_id = self.twitter_id
         user_dto.linkedin_id = self.linkedin_id
         user_dto.facebook_id = self.facebook_id
+        user_dto.skype_id = self.skype_id
+        user_dto.slack_id = self.slack_id
+        user_dto.irc_id = self.irc_id
+        user_dto.location = self.location
+        user_dto.osm_profile = self.osm_profile_url
+        user_dto.missing_maps_profile = self.missing_maps_profile_url
+        #this takes a while maybe move it somewhere else and have it async?
+        if fetch_picture:
+            user_dto.profile_picture = self.get_profile_picture()
+        
         user_dto.validation_message = self.validation_message
         user_dto.total_time_spent = 0
         user_dto.time_spent_mapping = 0
         user_dto.time_spent_validating = 0
+
 
         sql = """SELECT SUM(TO_TIMESTAMP(action_text, 'HH24:MI:SS')::TIME) FROM task_history
                 WHERE action='LOCKED_FOR_VALIDATION'
