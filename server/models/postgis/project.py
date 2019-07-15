@@ -132,16 +132,6 @@ class Project(db.Model):
         valid_geojson = geojson.dumps(aoi_geometry)
         self.geometry = ST_SetSRID(ST_GeomFromGeoJSON(valid_geojson), 4326)
         self.centroid = ST_Centroid(self.geometry)
-        # # parcel_shape = wkb.loads(self.centroid)
-        # # print(parcel_shape)
-        # value = ST_AsGeoJSON(self.centroid)
-        # print(valid_geojson.type)
-        # print(aoi_geojson.type)
-        # country_info = requests.get("https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=19.397992559386&lon=-99.1458620682819")
-        # country_info_json = country_info.content.decode('utf8').replace("'", '"')
-        # # Load the JSON to a Python list & dump it back out as formatted JSON
-        # data = json.loads(country_info_json)
-        # self.country = data["address"]["country"]
 
     def set_default_changeset_comment(self):
         """ Sets the default changeset comment"""
@@ -161,14 +151,16 @@ class Project(db.Model):
             lat_lon = list(r[0].split(','))
             lat = lat_lon[0].strip()
             lon = lat_lon[1].strip()
-
         url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat={0}&lon={1}".format(lat, lon)
         country_info = requests.get(url)
         country_info_json = country_info.content.decode('utf8').replace("'", '"')
         # Load the JSON to a Python list & dump it back out as formatted JSON
         data = json.loads(country_info_json)
-        self.country = list(data["address"]["country"])
-        print(self.country)
+        if data["address"].get('country') is not None:
+            self.country = [data['address']['country']]
+        else:
+            self.country = [data['address']['county']]
+
         self.save()
 
     def create(self):
