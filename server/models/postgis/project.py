@@ -11,12 +11,15 @@ from shapely.geometry import shape
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm.session import make_transient
 from geoalchemy2.shape import to_shape
+from shapely import wkb
 from shapely.geometry import Polygon
 from shapely.ops import transform
 from functools import partial
 import pyproj
 import dateutil.parser
 import datetime
+import requests
+import json
 
 from server import db
 from server.models.dtos.project_dto import ProjectDTO, DraftProjectDTO, ProjectSummary, PMDashboardDTO, ProjectStatsDTO, ProjectUserStatsDTO
@@ -29,7 +32,7 @@ from server.models.postgis.tags import Tags
 from server.models.postgis.task import Task, TaskHistory
 from server.models.postgis.user import User
 
-from server.models.postgis.utils import ST_SetSRID, ST_GeomFromGeoJSON, timestamp, ST_Centroid, NotFound, ST_Area, ST_Transform
+from server.models.postgis.utils import ST_SetSRID, ST_GeomFromGeoJSON, timestamp, ST_Centroid, NotFound, ST_Area, ST_Transform, ST_AsGeoJSON
 from server.services.grid.grid_service import GridService
 
 # Secondary table defining many-to-many join for private projects that only defined users can map on
@@ -129,11 +132,43 @@ class Project(db.Model):
         valid_geojson = geojson.dumps(aoi_geometry)
         self.geometry = ST_SetSRID(ST_GeomFromGeoJSON(valid_geojson), 4326)
         self.centroid = ST_Centroid(self.geometry)
+        # # parcel_shape = wkb.loads(self.centroid)
+        # # print(parcel_shape)
+        # value = ST_AsGeoJSON(self.centroid)
+        # print(valid_geojson.type)
+        # print(aoi_geojson.type)
+        # country_info = requests.get("https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=19.397992559386&lon=-99.1458620682819")
+        # country_info_json = country_info.content.decode('utf8').replace("'", '"')
+        # # Load the JSON to a Python list & dump it back out as formatted JSON
+        # data = json.loads(country_info_json)
+        # self.country = data["address"]["country"]
 
     def set_default_changeset_comment(self):
         """ Sets the default changeset comment"""
         default_comment = current_app.config['DEFAULT_CHANGESET_COMMENT']
         self.changeset_comment = f'{default_comment}-{self.id} {self.changeset_comment}' if self.changeset_comment is not None else f'{default_comment}-{self.id}'
+        self.save()
+
+    def set_country_info(self):
+        """ Sets the default country based on centroid"""
+        query = """SELECT ST_Y(ST_Transform(ST_Centroid(centroid), 4326)) || ', '
+                    || ST_X(ST_Transform(ST_Centroid(centroid), 4326))
+                    FROM  projects where id = {0}""".format(self.id)
+        results = db.session.execute(query)
+        lon = ''
+        lat = ''
+        for r in results:
+            lat_lon = list(r[0].split(','))
+            lat = lat_lon[0].strip()
+            lon = lat_lon[1].strip()
+
+        url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat={0}&lon={1}".format(lat, lon)
+        country_info = requests.get(url)
+        country_info_json = country_info.content.decode('utf8').replace("'", '"')
+        # Load the JSON to a Python list & dump it back out as formatted JSON
+        data = json.loads(country_info_json)
+        self.country = list(data["address"]["country"])
+        print(self.country)
         self.save()
 
     def create(self):
