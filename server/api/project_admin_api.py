@@ -317,7 +317,7 @@ class ProjectAdminAPI(Resource):
                 description: Internal Server Error
         """
         try:
-            ProjectAdminService.delete_project(project_id)
+            ProjectAdminService.delete_project(project_id, tm.authenticated_user_id)
             return {"Success": "Project deleted"}, 200
         except ProjectAdminServiceError:
             return {"Error": "Project has some mapping"}, 403
