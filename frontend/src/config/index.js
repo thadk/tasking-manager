@@ -1,5 +1,5 @@
 // API CONFIG
-export const API_URL = process.env.APP_BASE_URL + '/api/v1/';
+export const API_URL = process.env.REACT_APP_BASE_URL + '/api/v1/';
 export const EDITS_API_URL = process.env.EDITS_API_URL || 'https://osm-stats-production-api.azurewebsites.net/stats/hotosm';
 
 

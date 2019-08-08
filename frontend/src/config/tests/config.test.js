@@ -1,8 +1,10 @@
 import * as config from '../index';
 
 
-it('exports API_URL', () => {
+it('exports API_URL, not undef', () => {
+  console.log(config.API_URL)
   expect(typeof(config.API_URL)).toBe('string');
+  expect(config.API_URL).not.toContain('undefined');
 });
 it('exports EDITS_API_URL', () => {
   expect(typeof(config.EDITS_API_URL)).toBe('string');
