@@ -1,14 +1,6 @@
-// API CONFIG
-var dotenv = require('dotenv')
-var dotenvExpand = require('dotenv-expand')
-
-var myEnv = dotenv.config()
-dotenvExpand(myEnv)
-
 // API ENDPOINTS
-// export const API_URL = process.env.REACT_APP_BASE_URL ? process.env.REACT_APP_BASE_URL + '/api/v1/'  :  'http://127.0.0.1:5000/api/v1/'
+export const API_URL = process.env.REACT_APP_BASE_URL ? process.env.REACT_APP_BASE_URL + '/api/v1/'  :  'http://127.0.0.1:5000/api/v1/'
 export const EDITS_API_URL = process.env.REACT_APP_EDITS_API_URL || '';
-export const API_URL = process.env.REACT_APP_BASE_URL ? process.env.REACT_APP_BASE_URL + '/api/v1/'  :  'http://127.0.0.1:5000/api/v1/';
 
 // APPLICATION SETTINGS
 export const DEFAULT_LOCALE = process.env.REACT_APP_DEFAULT_LOCALE || 'en';

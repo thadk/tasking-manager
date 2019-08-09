@@ -32,7 +32,7 @@ ADD https://gist.githubusercontent.com/thadk/3e44b06fbe3ec642d2a86b99174c37d1/ra
 # Setup and build frontend
 RUN  cd frontend && npx yarn install && CI=true REACT_APP_BASE_URL='https://tasks-stage.hotosm.org' npx yarn test config  --env=jsdom  && REACT_APP_STACK=STAGING REACT_APP_BASE_URL='https://tasks-stage.hotosm.org' npx react-scripts build
 
-# DEFINITIONS
+# INITIALIZATION
 
 EXPOSE 5000
 CMD ["python", "manage.py", "runserver", "-h", "0.0.0.0"]
