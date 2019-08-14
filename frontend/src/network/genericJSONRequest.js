@@ -15,7 +15,6 @@ export function fetchExternalJSONAPI(url): Promise<*> {
     });
 }
 
-
 export function fetchLocalJSONAPI(endpoint): Promise<*> {
   // remove backslashes initial and final backslashes
   endpoint = endpoint.startsWith('/') ? endpoint.substr(1,endpoint.length) : endpoint;
@@ -26,6 +25,25 @@ export function fetchLocalJSONAPI(endpoint): Promise<*> {
     headers: {
       'Content-Type': 'application/json'
     }
+  })
+    .then(handleErrors)
+    .then(res => {
+      return res.json();
+    });
+}
+
+export function pushToLocalJSONAPI(endpoint, payload, token, method='POST'): Promise<*> {
+  // remove backslashes initial and final backslashes
+  endpoint = endpoint.startsWith('/') ? endpoint.substr(1,endpoint.length) : endpoint;
+  endpoint = endpoint.endsWith('/') ? endpoint.substr(0,endpoint.length-1) : endpoint;
+
+  return fetch(`${API_URL}${endpoint}`, {
+    method: method,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Token ${token}`
+    },
+    body: payload
   })
     .then(handleErrors)
     .then(res => {
