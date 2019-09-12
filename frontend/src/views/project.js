@@ -2,6 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { ProjectNav } from '../components/projects/projectNav';
 import { MoreFiltersForm } from '../components/projects/moreFiltersForm';
+import { ProjectDetail } from '../components/projectDetail/index'
 
 import {
   useProjectsQueryAPI,
@@ -10,6 +11,8 @@ import {
 } from '../hooks/UseProjectsQueryAPI';
 import { useTagAPI } from '../hooks/UseTagAPI';
 import useForceUpdate from '../hooks/UseForceUpdate';
+
+import { useFetchLocalAPI } from '../hooks/UseFetchLocalAPI';
 
 import { ProjectCardPaginator } from '../components/projects/projectCardPaginator';
 import { ProjectSearchResults } from '../components/projects/projectSearchResults';
@@ -94,3 +97,27 @@ export const MoreFilters = props => {
     </>
   );
 };
+
+export const ProjectDetailPage = props => {
+  const userPreferences = useSelector(state => state.preferences);
+  const Error = ({ error }) => <span>Error:{error.message}</span>;
+  
+  // replace by queries/summary/ soon
+  const { error, loading, data } = useFetchLocalAPI(`projects/${props.id}/`);
+  if (error) return <Error error={error} />;
+
+  // const fetchedProject = {
+  //   author: "hi",
+  //   projectId: 2134,
+  //   projectPriority: "URGENT",
+  //   mappingTypes: ["BUILDINGS"]
+  // };
+  return (
+    <ProjectDetail 
+      project={data}
+      userPreferences={userPreferences} 
+      type="detail"
+      />
+  );
+
+}

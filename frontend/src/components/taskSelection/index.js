@@ -74,7 +74,7 @@ class TaskSelectionFooter extends React.Component {
           <h3 className={titleClasses}>
             <FormattedMessage {...messages.imagery} />
           </h3>
-          <Imagery value={this.props.imagery} />
+          {/* <Imagery value={this.props.imagery} /> */}
         </div>
         <div className="w-20 fl">
           <h3 className={titleClasses}>
